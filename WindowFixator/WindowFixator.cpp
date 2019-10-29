@@ -2,11 +2,14 @@
 #include <Windows.h>
 #include "KeyHook/KeyHook.h"
 
+bool AUTORUN = true;
+
 void ToggleWindowPos();
 void AddToAutorun();
 
-int main() {	
-	AddToAutorun();
+int main() {
+	if (AUTORUN)
+		AddToAutorun();
 	StartKeyHook(ToggleWindowPos);
 }
 
@@ -22,14 +25,35 @@ void ToggleWindowPos() {
 		SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
 
+//void AddToAutorun() {
+//	//HKEY hKey;
+//	char szPath[255];
+//	GetModuleFileNameA(NULL, szPath, sizeof(szPath));
+//
+//	char command[255];
+//	strcpy_s(command, "REG ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v WindowsFixator /d ");
+//	strcat(command, szPath);
+//
+//	system("REG ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v WindowsFixator /d " + (szPath));
+//}
+
 void AddToAutorun() {
 	HKEY hKey;
-	wchar_t szPath[255];
-	GetModuleFileName(NULL, szPath, sizeof(szPath));
-	LSTATUS lres = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_READ, &hKey);
+	wchar_t szPath[4096];
+	GetModuleFileNameW(NULL, szPath, sizeof(szPath));
+	RegCreateKeyExA(HKEY_LOCAL_MACHINE,
+		"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+		NULL,
+		NULL,
+		REG_OPTION_NON_VOLATILE,
+		KEY_SET_VALUE,
+		NULL,
+		&hKey,
+		NULL);
 
-	if (hKey){
-		RegSetValueEx(hKey, L"WinFix", NULL, REG_SZ, (LPBYTE)szPath, lstrlenW(szPath));
+	if (hKey) {
+		RegSetValueExW(hKey, L"My program", NULL, REG_SZ, (LPBYTE)szPath, wcslen(szPath));
 		RegCloseKey(hKey);
 	}
+
 }
