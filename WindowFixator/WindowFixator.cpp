@@ -8,6 +8,9 @@ void ToggleWindowPos();
 void AddToAutorun();
 
 int main() {
+	// Make window hidden
+	ShowWindow(GetConsoleWindow(), SW_HIDE);
+
 	if (AUTORUN)
 		AddToAutorun();
 	StartKeyHook(ToggleWindowPos);
@@ -25,22 +28,10 @@ void ToggleWindowPos() {
 		SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
 
-//void AddToAutorun() {
-//	//HKEY hKey;
-//	char szPath[255];
-//	GetModuleFileNameA(NULL, szPath, sizeof(szPath));
-//
-//	char command[255];
-//	strcpy_s(command, "REG ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v WindowsFixator /d ");
-//	strcat(command, szPath);
-//
-//	system("REG ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v WindowsFixator /d " + (szPath));
-//}
-
 void AddToAutorun() {
 	HKEY hKey;
-	wchar_t szPath[4096];
-	GetModuleFileNameW(NULL, szPath, sizeof(szPath));
+	char szPath[1024];
+	GetModuleFileNameA(NULL, szPath, sizeof(szPath));
 	RegCreateKeyExA(HKEY_LOCAL_MACHINE,
 		"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
 		NULL,
@@ -51,9 +42,9 @@ void AddToAutorun() {
 		&hKey,
 		NULL);
 
+	// Add a value to the "run" registry key
 	if (hKey) {
-		RegSetValueExW(hKey, L"My program", NULL, REG_SZ, (LPBYTE)szPath, wcslen(szPath));
+		RegSetValueExA(hKey, "WindowFixator", NULL, REG_SZ, (LPBYTE)szPath, strlen(szPath));
 		RegCloseKey(hKey);
 	}
-
 }
